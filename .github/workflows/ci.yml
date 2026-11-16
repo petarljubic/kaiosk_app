@@ -1,0 +1,45 @@
+name: ci
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Policy checks
+        run: python tools/policy/check_all.py
+  flutter:
+    needs: policy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Analyze
+        run: flutter analyze
+      - name: Architecture tests
+        run: flutter test architectureTest
+      - name: Tests
+        run: |
+          if [ -d test ]; then
+            flutter test
+          else
+            echo "no test/ directory yet"
+          fi
+      - name: Build web
+        run: flutter build web --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kaiosk-web-${{ github.sha }}
+          path: build/web
+          if-no-files-found: error

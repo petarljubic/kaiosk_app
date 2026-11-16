@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "app": {
+      "type": "local",
+      "command": "node",
+      "args": [
+        "tools/app-mcp/server.mjs"
+      ],
+      "env": {
+        "APP_BASE_URL": "http://127.0.0.1:3000"
+      }
+    }
+  }
+}
