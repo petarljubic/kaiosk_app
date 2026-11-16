@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "app": {
-      "type": "local",
+      "type": "stdio",
       "command": "node",
       "args": [
         "tools/app-mcp/server.mjs"
@@ -12,13 +12,20 @@
     },
     "dart": {
       "type": "stdio",
-      "command": "dart",
-      "args": ["mcp-server"]
+      "command": "mise",
+      "args": [
+        "exec",
+        "--",
+        "dart",
+        "mcp-server"
+      ]
     },
     "mise": {
       "type": "stdio",
       "command": "mise",
-      "args": ["mcp"]
+      "args": [
+        "mcp"
+      ]
     }
   }
 }

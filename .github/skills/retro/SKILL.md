@@ -1,56 +1,79 @@
 ---
 name: retro
-description: Runs after a feature is finished. Scans the conversation for mistakes that happened even though a skill was followed, then auto-heals the skill that allowed the mistake. Use when the user says a feature is done, asks for a retro, or asks the agent to learn from corrections.
+description: Reads a finished session, finds where the agent struggled, and proposes a severity-ranked list of fixes to checks, skills, and steering files. Applies only the fixes the user picks. Use only when the user invokes retro or asks the agent to learn from a session. Never runs on its own.
 ---
 
 # Retro
 
-Run this only after a feature is finished. Do not run it mid-implementation, and do not use it to renegotiate the architecture.
+Run this only when the user asks for it. A smooth session has little to teach. A session that was harder than it should have been is the input. Do not use retro to renegotiate the architecture, and do not use it to judge the code; that is a review.
 
-## Scan
+## 1. Read the session
 
-Scan the current conversation first. If a session-history tool is available, use it to read this session's turns for the same feature. Do not claim you scanned history you cannot see. Ignore turns that belong to a different feature.
+Read the current session. If the user names an earlier session and a session-history tool can read it, read that one instead. Do not claim you read history you cannot see. Ignore turns that belong to a different task.
 
-Record each user correction, failed check, or repeated mistake. For each one, classify it:
+Find the struggle moments:
 
-- The user changed their mind. This is a decision request, not a skill bug.
-- The agent ignored a skill. The skill stays. Add a louder check to that skill's finish list only.
-- The agent followed a skill and the result was still wrong. That skill needs an auto-heal.
-- The agent could not prove the result. `verify-output` is missing a probe.
-- The specifier left a gap that became a wrong behavior. Add that topic to the specifier gap list.
+- a user correction or a reversed decision
+- a failed check, test, or build, and what fixed it
+- a long search for a file, a command, or a fact
+- a tool call that cost a lot and returned little
+- a mistake the user caught that a tool could have caught
+- information the agent needed and could not reach
+- a skill step that was followed and still led to a wrong result
+- a specifier gap that became a wrong behavior
 
-## Auto-heal
+Quote or point to the exact turn for each. A candidate with no session moment behind it is generic advice. Drop it.
 
-Auto-heal means editing the skill file so the same mistake fails earlier next time.
+## 2. Map each struggle to a fix
 
-Before editing, read `.ai/decisions.json`.
+Pick the fix kind from the struggle, in this order of preference:
 
-You may edit only paths under `retro_may_edit`. You may not edit `immutable_paths`. Immutable files include `.ai/decisions.json`, `.ai/guardrails.md`, `tools/policy`, and the CI workflow.
+| Struggle | Fix |
+|---|---|
+| A mistake a tool could catch | An automated check: a lint rule, a test, a policy script, or a CI step |
+| A judgement-call mistake | A rule in the skill that allowed it, as a question, a refusal, or a finish check |
+| A specifier gap | A topic or a question in the specifier's grill list |
+| A result the agent could not prove | A probe or a command in verify-output |
+| A long search | A pointer in a file the agent already reads |
+| Information the agent could not reach | Wider access: a log file, a state probe, an MCP tool |
+| A costly tool call for little return | A cheaper command or tool |
+| A steering line that changed nothing | Delete the line |
+| The user changed their mind | No fix; record it as a decision |
 
-Agent instructions exist in both `.github/agents` and `.claude/agents`. An auto-heal that changes one must change the other in the same way.
+A mechanical mistake becomes a check, not prose. Prose goes only to a real judgement call. Do not add a rule to `AGENTS.md` or `CLAUDE.md`; those load into every session. Put it in the skill that owns the step.
 
-Do not weaken a rule to make a past mistake look acceptable. Do not delete a scenario, a policy check, or an architecture rule. Do not add a comment exception, a layer dependency, or a documentation escape hatch.
+If an existing check could have caught the mistake but is not wired into CI or the policy script, propose wiring it. Do not propose a duplicate.
 
-A valid auto-heal adds the smallest missing check: a question the specifier should have asked, a verification step, a naming rule, or a refusal condition. The new text must be specific to the mistake, not a generic reminder to be careful.
+If the repository has no guard for the mistake at all, no policy check and no CI step, list that as its own finding.
 
-If the only real fix would change an immutable decision, do not apply it. Write the proposal in the retro log and ask the user.
+## 3. Rank and propose
 
-## Order
+Order candidates by severity: what the mistake would cost if it happened again, not how loud it was. A quiet mistake that ships a wrong price outranks a loud failed build.
 
-1. Write `.ai/retros/<date>-<slug>.md` first. Include the mistakes, the classification, the skill diff you intend, and anything you will not change.
-2. Apply the skill edit.
-3. Re-read the skill and confirm every phrase in `skills.contracts` for that skill is still present.
-4. Run `python tools/policy/check_skills.py`.
-5. If the check fails, revert the skill edit and say so. Do not weaken the contract to make the check pass.
+Write `.ai/retros/<date>-<slug>.md` with, for each candidate:
 
-## Log
+- rank and severity
+- the session moment, quoted or pointed to
+- the fix kind and the exact file
+- the intended diff, as before and after text
+- whether it touches an immutable path
 
-The retro log is the only new document this skill creates. Include:
+Then list the candidates in the reply and stop. Change no file other than the retro log until the user picks.
 
-- feature slug
-- mistakes, each with the user evidence
-- skills changed
-- skills deliberately left alone
-- immutable changes that need a human decision
+## 4. Apply only the picked candidates
 
-Do not rewrite history, and do not auto-heal a skill the conversation does not implicate.
+When the user picks candidates, auto-heal only those. Read `.ai/decisions.json` first.
+
+- Edit only paths under `retro_may_edit`. Do not edit `immutable_paths`: `.ai/decisions.json`, `.ai/guardrails.md`, `.ai/charter.md`, `tools/policy`, and the CI workflow. A picked candidate that needs one of them stays a proposal and needs an explicit user authorization that names the file.
+- Agent instructions exist in `.github/agents` and `.claude/agents`, and commands in `.github/prompts` and `.claude/commands`. Change both copies the same way.
+- Do not weaken a rule to make a past mistake look acceptable. Do not delete a scenario, a policy check, or an architecture rule. Do not add a comment exception, a layer dependency, or a documentation escape hatch.
+- The new text names the specific mistake. "Be careful" is not a fix.
+
+After the edits:
+
+1. Re-read each changed skill and confirm every phrase in `skills.contracts` for it is still present.
+2. Run `python tools/policy/check_all.py`.
+3. If a check fails, revert that edit and say so. Do not weaken the contract to make the check pass.
+4. Update the retro log: applied, rejected by the user, and left for a human decision.
+
+Do not rewrite history, and do not touch a skill the session does not implicate.

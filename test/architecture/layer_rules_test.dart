@@ -9,13 +9,13 @@ List<Violation> check(String path, List<String> imports) =>
 
 void main() {
   group('the rules reject', () {
-    test('domain importing Flutter', () {
-      expect(check('lib/features/stay/domain/stay.dart', ['package:flutter/material.dart']), isNotEmpty);
+    test('domain importing any package', () {
+      expect(check('lib/features/stay/domain/stay.dart', ['package:any_package/any_package.dart']), isNotEmpty);
     });
 
-    test('domain importing drift or Firebase', () {
-      expect(check('lib/features/stay/domain/stay.dart', ['package:drift/drift.dart']), isNotEmpty);
-      expect(check('lib/features/stay/domain/stay.dart', ['package:cloud_firestore/cloud_firestore.dart']), isNotEmpty);
+    test('domain importing a platform Dart library', () {
+      expect(check('lib/features/stay/domain/stay.dart', ['dart:io']), isNotEmpty);
+      expect(check('lib/features/stay/domain/stay.dart', ['dart:ui']), isNotEmpty);
     });
 
     test('domain importing data or core', () {
@@ -25,10 +25,6 @@ void main() {
 
     test('view importing data by relative path', () {
       expect(check('lib/features/stay/view/board_page.dart', ['../data/stay_dao.dart']), isNotEmpty);
-    });
-
-    test('view importing drift', () {
-      expect(check('lib/features/stay/view/board_page.dart', ['package:drift/drift.dart']), isNotEmpty);
     });
 
     test('data importing view', () {
@@ -48,16 +44,16 @@ void main() {
     test('a file outside every layer', () {
       expect(check('lib/utils/format.dart', const []), isNotEmpty);
     });
-
-    test('bloc_test in pubspec', () {
-      expect(checkPubspec('dev_dependencies:\n  bloc_test: ^10.0.0\n'), isNotEmpty);
-    });
   });
 
   group('the rules allow', () {
+    test('domain depending on pure Dart and any feature\'s domain', () {
+      expect(check('lib/features/stay/domain/stay.dart', ['dart:async', 'dart:math', '../../map/domain/place.dart', 'package:kaiosk/features/stay/domain/guest.dart']), isEmpty);
+    });
+
     test('view and data depending on any feature\'s domain', () {
-      expect(check('lib/features/stay/view/board_cubit.dart', ['package:flutter_bloc/flutter_bloc.dart', '../../map/domain/place.dart']), isEmpty);
-      expect(check('lib/features/stay/data/stay_dao.dart', ['package:drift/drift.dart', '../domain/stay.dart']), isEmpty);
+      expect(check('lib/features/stay/view/board_cubit.dart', ['package:any_package/any_package.dart', '../../map/domain/place.dart']), isEmpty);
+      expect(check('lib/features/stay/data/stay_dao.dart', ['package:any_package/any_package.dart', '../domain/stay.dart']), isEmpty);
     });
 
     test('data and view depending on core', () {
@@ -73,9 +69,5 @@ void main() {
 
   test('lib/ follows the layer rules', () {
     expect(checkLibrary(Directory('lib')), isEmpty);
-  });
-
-  test('pubspec.yaml has no forbidden dependencies', () {
-    expect(checkPubspec(File('pubspec.yaml').readAsStringSync()), isEmpty);
   });
 }

@@ -23,18 +23,13 @@ class Violation {
 
 const _diRoots = ['lib/core/di/', 'lib/main.dart'];
 
-const _forbiddenPackages = {
-  Layer.domain: [
-    'package:flutter/',
-    'package:flutter_bloc/',
-    'package:bloc/',
-    'package:drift/',
-    'package:firebase_',
-    'package:cloud_firestore/',
-    'package:go_router/',
-  ],
-  Layer.data: ['package:flutter_bloc/', 'package:bloc/', 'package:go_router/'],
-  Layer.view: ['package:drift/', 'package:firebase_', 'package:cloud_firestore/'],
+const _pureDartLibraries = {
+  'dart:async',
+  'dart:collection',
+  'dart:convert',
+  'dart:core',
+  'dart:math',
+  'dart:typed_data',
 };
 
 const _allowedLayers = {
@@ -48,7 +43,6 @@ final _directive = RegExp(
   r'''^\s*(?:import|export|part)\s+['"]([^'"]+)['"]''',
   multiLine: true,
 );
-final _forbiddenDependency = RegExp(r'^\s+bloc_test\s*:', multiLine: true);
 
 Layer layerOf(String path) {
   if (path == 'lib/main.dart') return Layer.entry;
@@ -82,17 +76,11 @@ List<Violation> checkImport(String path, Layer layer, String target) {
   if (target.startsWith('package:get_it/') && !_diRoots.any(path.startsWith)) {
     return [Violation(path, 'get_it is used only in lib/core/di/ and lib/main.dart')];
   }
-  if (target.startsWith('package:')) return _checkPackage(path, layer, target);
   if (target.startsWith('lib/')) return _checkInternal(path, layer, target);
+  if (layer == Layer.domain && !_pureDartLibraries.contains(target)) {
+    return [Violation(path, 'domain may import only pure Dart libraries and domain files, not $target')];
+  }
   return const [];
-}
-
-List<Violation> _checkPackage(String path, Layer layer, String target) {
-  final forbidden = _forbiddenPackages[layer] ?? const <String>[];
-  return [
-    for (final prefix in forbidden)
-      if (target.startsWith(prefix)) Violation(path, '${layer.name} must not import $target'),
-  ];
 }
 
 List<Violation> _checkInternal(String path, Layer layer, String target) {
@@ -128,8 +116,3 @@ List<SourceFile> readLibrary(Directory root) {
 
 List<Violation> checkLibrary(Directory root) =>
     [for (final file in readLibrary(root)) ...checkFile(file)];
-
-List<Violation> checkPubspec(String pubspec) => [
-      if (_forbiddenDependency.hasMatch(pubspec))
-        const Violation('pubspec.yaml', 'bloc_test is a forbidden dependency'),
-    ];

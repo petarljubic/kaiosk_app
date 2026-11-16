@@ -36,8 +36,8 @@ Primary users: A small group of people in a private company: the campsite owner 
 - Package root: `kaiosk`
 - Frameworks: flutter, material_ui
 - Libraries: flutter_bloc, get_it, go_router, go_router_builder, drift, firebase_core, firebase_auth, cloud_firestore, mocktail
-- Testing: flutter_test unit tests for domain and data; cubits tested with plain flutter_test and mocktail (no bloc_test); widget tests for views; Dart architecture tests in architectureTest/; approved Gherkin scenarios from the specifier skill
-- Module map: Feature-first onion: lib/features/<feature>/{domain,data,view}; lib/core/ holds get_it DI, go_router, drift database and Firebase setup and is the composition root together with lib/main.dart. domain is pure Dart; data -> domain, core; view -> domain, core; features never import another feature's data or view. Enforced by the Dart tests in architectureTest/.
+- Testing: flutter_test unit tests for domain and data; cubits tested with plain flutter_test and mocktail (no bloc_test); widget tests for views; Dart architecture tests in test/architecture/; approved Gherkin scenarios from the specifier skill
+- Module map: Feature-first onion: lib/features/<feature>/{domain,data,view}; lib/core/ holds get_it DI, go_router, drift database and Firebase setup and is the composition root together with lib/main.dart. domain is pure Dart; data -> domain, core; view -> domain, core; features never import another feature's data or view. Enforced by the Dart tests in test/architecture/.
 
 Toolchain versions in `.ai/decisions.json` are the versions used at setup. Refresh them before the first native CI run if a newer stable release is current.
 

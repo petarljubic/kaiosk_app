@@ -34,7 +34,7 @@
     ],
     "build_tool": "none",
     "package_root": "kaiosk",
-    "testing_strategy": "flutter_test unit tests for domain and data; cubits tested with plain flutter_test and mocktail (no bloc_test); widget tests for views; Dart architecture tests in architectureTest/; approved Gherkin scenarios from the specifier skill"
+    "testing_strategy": "flutter_test unit tests for domain and data; cubits tested with plain flutter_test and mocktail (no bloc_test); widget tests for views; Dart architecture tests in test/architecture/; approved Gherkin scenarios from the specifier skill"
   },
   "commands": {
     "lint": "python tools/policy/check_all.py",

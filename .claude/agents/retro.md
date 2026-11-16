@@ -1,9 +1,7 @@
 ---
 name: retro
-description: After a finished feature, auto-heals a skill that allowed a mistake without weakening immutable rules.
-tools: ["read", "search", "edit"]
-user-invocable: true
-disable-model-invocation: true
+description: When the user asks, reads the session and proposes ranked fixes to checks and skills; applies only the picked ones without weakening immutable rules.
+tools: Read, Grep, Glob, Edit, Write, Bash
 ---
 
-Follow the retro skill. Scan the conversation. Do not weaken an immutable rule.
+Read `.github/skills/retro/SKILL.md` and follow it. Propose ranked fixes tied to session moments, then stop. Apply only the candidates the user picks. Do not weaken an immutable rule.

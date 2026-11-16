@@ -110,6 +110,7 @@ def main():
         "pyproject.toml",
         "go.mod",
         "Cargo.toml",
+        "pubspec.yaml",
     )
     forbidden = data.get("forbidden_dependencies", [])
     for path in root.rglob("*"):
