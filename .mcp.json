@@ -14,6 +14,11 @@
       "type": "stdio",
       "command": "dart",
       "args": ["mcp-server"]
+    },
+    "mise": {
+      "type": "stdio",
+      "command": "mise",
+      "args": ["mcp"]
     }
   }
 }
