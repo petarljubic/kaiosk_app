@@ -1,0 +1,174 @@
+{
+  "status": "immutable",
+  "generated_on": "2026-11-16",
+  "product": {
+    "name": "kAIosk",
+    "purpose": "Offline-first campsite app (first client: Camp Enigma) that replaces the paper book: check-in, pricing, camp map, reports and exports, with optional Firebase backup.",
+    "users": "A small group of people in a private company: the campsite owner and staff, on a tablet, laptop or phone.",
+    "shape": "ui"
+  },
+  "git": {
+    "remote": "https://github.com/petarljubic/kaiosk_app",
+    "default_branch": "main"
+  },
+  "engineering": {
+    "languages": [
+      "generic"
+    ],
+    "primary_language": "generic",
+    "architecture": "custom",
+    "frameworks": [
+      "flutter",
+      "material_ui"
+    ],
+    "libraries": [
+      "flutter_bloc",
+      "get_it",
+      "go_router",
+      "go_router_builder",
+      "drift",
+      "firebase_core",
+      "firebase_auth",
+      "cloud_firestore",
+      "mocktail"
+    ],
+    "build_tool": "none",
+    "package_root": "kaiosk",
+    "testing_strategy": "flutter_test unit tests for domain and data; cubits tested with plain flutter_test and mocktail (no bloc_test); widget tests for views; Dart architecture tests in architectureTest/; approved Gherkin scenarios from the specifier skill"
+  },
+  "commands": {
+    "lint": "python tools/policy/check_all.py",
+    "test": "python tools/policy/check_all.py",
+    "architecture": "python tools/policy/check_all.py",
+    "build": "python tools/write_build_info.py",
+    "start": "flutter run -d web-server --web-port 3000",
+    "state_check": "GET http://127.0.0.1:3000"
+  },
+  "complexity": {
+    "max_cyclomatic": 10,
+    "max_function_lines": 60,
+    "max_nesting": 3,
+    "max_parameters": 5,
+    "max_file_lines": 400
+  },
+  "comments": {
+    "scan_globs": [
+      "tools/policy/*.py"
+    ],
+    "allow_globs": [
+      "features/**/*.feature",
+      "**/*.md"
+    ],
+    "allow_line_patterns": []
+  },
+  "architecture": {
+    "source_globs": [],
+    "composition_root_globs": [],
+    "rules": [
+      {
+        "name": "placeholder isolation",
+        "source_globs": [
+          "src/**"
+        ],
+        "forbidden_markers": []
+      }
+    ]
+  },
+  "skills": {
+    "required": [
+      "specifier",
+      "retro",
+      "no-comments",
+      "code-over-docs",
+      "code-health",
+      "verify-output",
+      "implement-from-spec"
+    ],
+    "contracts": {
+      "specifier": [
+        "Gherkin",
+        "green light",
+        "Do not implement"
+      ],
+      "retro": [
+        "auto-heal",
+        "immutable",
+        "Do not weaken"
+      ],
+      "no-comments": [
+        "Do not add a comment",
+        "allowlist"
+      ],
+      "code-over-docs": [
+        "Do not add documentation"
+      ],
+      "code-health": [
+        "cyclomatic complexity",
+        "coupling"
+      ],
+      "verify-output": [
+        "screenshot",
+        "MCP"
+      ],
+      "implement-from-spec": [
+        ".approved",
+        "scenario"
+      ]
+    }
+  },
+  "immutable_paths": [
+    ".ai/decisions.json",
+    ".ai/guardrails.md",
+    ".ai/charter.md",
+    "tools/policy",
+    ".github/workflows/ci.yml"
+  ],
+  "retro_may_edit": [
+    ".github/skills",
+    ".github/agents",
+    ".claude/agents",
+    ".github/instructions",
+    ".github/prompts",
+    ".claude/commands",
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".github/copilot-instructions.md"
+  ],
+  "forbidden_dependencies": [
+    "bloc_test"
+  ],
+  "extra_rules": [
+    "Prefer Cubit over Bloc; use Bloc only with a written reason in the approved spec",
+    "Dependency injection only through get_it, registered in lib/core/di/",
+    "Routes only through go_router_builder typed routes",
+    "drift schema is written SQL-first in .drift files",
+    "domain imports no Flutter, drift or Firebase; view never imports data; a feature never imports another feature's data or view",
+    "Every write goes to drift first; Firebase sync runs in the background and the UI never waits on it",
+    "Do not use bloc_test; test cubits with plain flutter_test and mocktail",
+    "Where these complexity limits conflict with flutter_lints / Dart analyzer rules, the Dart rules win"
+  ],
+  "toolchain": {
+    "kotlin": "2.1.21",
+    "detekt": "1.23.8",
+    "konsist": "1.0.0-beta.1",
+    "gradle": "8.14",
+    "java": "21",
+    "checkstyle": "10.21.4",
+    "archunit": "1.3.0",
+    "junit": "5.11.4",
+    "node": "22",
+    "typescript": "5.8.3",
+    "eslint": "9.28.0",
+    "typescript_eslint": "8.33.1",
+    "types_node": "22.15.21",
+    "python": "3.12",
+    "dotnet": "8.0.x",
+    "netarchtest": "1.3.2",
+    "test_sdk": "17.13.0",
+    "xunit": "2.9.3",
+    "xunit_runner": "3.0.2",
+    "go": "1.24",
+    "rust_edition": "2021"
+  },
+  "native_check": "the language-agnostic policy scripts only"
+}
